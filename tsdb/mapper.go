@@ -1,6 +1,7 @@
 package tsdb
 
 import (
+	"bytes"
 	"container/heap"
 	"encoding/binary"
 	"encoding/json"
@@ -653,8 +654,13 @@ func newPointHeap() *pointHeap {
 func (pq pointHeap) Len() int { return len(pq) }
 
 func (pq pointHeap) Less(i, j int) bool {
-	// We want a min-heap (points in chronological order), so use less than.
-	return pq[i].timestamp < pq[j].timestamp
+	if pq[i].timestamp < pq[j].timestamp {
+		return true
+	} else if pq[i].timestamp > pq[j].timestamp {
+		return false
+	}
+	// Break the tie in a deterministic way.
+	return bytes.Compare(pq[i].value, pq[j].value) == -1
 }
 
 func (pq pointHeap) Swap(i, j int) { pq[i], pq[j] = pq[j], pq[i] }
